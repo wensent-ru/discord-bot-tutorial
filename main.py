@@ -39,7 +39,7 @@ async def setprefix(ctx, new: str):
     prefix[str(ctx.guild.id)] = new
     with open("prefix.json", "w") as f:
         json.dump(prefix, f, indent=4)
-    await ctx.send(f"Новый префикс `{new}`")
+    await ctx.send(f"New prefix `{new}`")
 
 
 @bot.command()
