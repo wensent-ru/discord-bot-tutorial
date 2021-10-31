@@ -16,7 +16,7 @@ Repository for the [Discord.py bot tutorials](https://www.youtube.com/playlist?l
 
 Click on the branch-selector button located here:
 
-![Branch Selector](https://d.radikal.ru/d21/2110/c8/86fc96a11f6c.png)
+![Branch Selector](https://d.radikal.ru/d21/2110/94/5e45264b1b18.png)
 
 Select the desired episode's source code:
 
