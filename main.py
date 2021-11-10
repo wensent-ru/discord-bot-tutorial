@@ -1,34 +1,63 @@
-from discord.ext import commands
 import discord
-import random
-
-# A list with links to reaction gifs (kiss, hug, punch and etc)
-bite = ['https://media.discordapp.net/attachments/889573796070162432/889573892207804466/image0.gif',
-        'https://media.discordapp.net/attachments/889573796070162432/889573892530782208/image1.gif',
-        'https://media.discordapp.net/attachments/889573796070162432/889573893772283944/image3.gif',
-        'https://media.discordapp.net/attachments/889573796070162432/889573894258843668/image4.gif',
-        'https://media.discordapp.net/attachments/889573796070162432/889573894598574121/image5.gif',
-        'https://media.discordapp.net/attachments/889573796070162432/889573895470972958/image7.gif',
-        'https://media.discordapp.net/attachments/889573796070162432/889573896037224518/image8.gif'
-        ]
+from discord.ext import commands
+import os
+import json
 
 
-class Reaction(commands.Cog):
-
-    def __init__(self, bot):
-        self.bot = bot
-        print('Module {} is loaded'.format(self.__class__.__name__))
-
-    @commands.command()
-    async def bite(self, ctx, member: discord.Member = None):
-        if member is None:
-            member = ctx.author
-        embed = discord.Embed(color=member.color, title="Reaction: bite")
-        embed.description = f"{ctx.author.mention} bites {member.mention}"
-        url = (random.choice(bite))
-        embed.set_image(url=url)
-        await ctx.send(embed=embed)
+def get_prefix(bot, message):
+    with open("prefix.json", "r") as f:
+        prefix = json.load(f)
+    return prefix[str(message.guild.id)]
 
 
-def setup(bot):
-    bot.add_cog(Reaction(bot))
+intents = discord.Intents().all()
+bot = commands.Bot(command_prefix=get_prefix, intents=intents)
+
+
+@bot.event
+async def on_guild_join(guild):
+    with open("prefix.json", "r") as f:
+        prefix = json.load(f)
+    prefix[str(guild.id)] = "."
+    with open("prefix.json", "w") as f:
+        json.dump(prefix, f, indent=4)
+
+
+@bot.event
+async def on_guild_remove(guild):
+    with open("prefix.json", "r") as f:
+        prefix = json.load(f)
+    prefix.pop(str(guild.id))
+    with open("prefix.json", "w") as f:
+        json.dump(prefix, f, indent=4)
+
+
+@bot.command()
+async def setprefix(ctx, new: str):
+    with open("prefix.json", "r") as f:
+        prefix = json.load(f)
+    prefix[str(ctx.guild.id)] = new
+    with open("prefix.json", "w") as f:
+        json.dump(prefix, f, indent=4)
+    await ctx.send(f"New prefix `{new}`")
+
+
+@bot.command()
+async def load(ctx, extension):
+    extension = extension.lower()
+    bot.load_extension(f'cogs.{extension}')
+    await ctx.send(f'{extension} loaded')
+
+
+@bot.command()
+async def unload(ctx, extension):
+    extension = extension.lower()
+    bot.unload_extension(f'cogs.{extension}')
+    await ctx.send(f'{extension} unloaded')
+
+for filename in os.listdir("./cogs"):
+    if filename.endswith(".py") and not filename.startswith("_"):
+        bot.load_extension(f"cogs.{filename[:-3]}")
+
+
+bot.run("You token here")
